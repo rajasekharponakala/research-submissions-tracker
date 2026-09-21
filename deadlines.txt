@@ -1,0 +1,25 @@
+- ACL 2027|Kyoto, Japan|2027-08-17|TBD (ARR cycle ~Jan 2027)|NLP|https://2027.aclweb.org/
+- NAACL 2027|San Francisco, USA|2027-06-01|2026-10-12 (ARR)|NLP|https://2027.naacl.org/
+- EACL 2027|Athens, Greece|2027-03-09|2026-10-11 (commit; needs ARR-reviewed paper)|NLP|https://2027.eacl.org/
+- COLING 2027|Macau, China|2027-05-09|2026-10-12 (ARR)|NLP|https://coling2027.org/
+- EMNLP 2027|TBA|TBA|TBA (was May 2026 for EMNLP 2026)|NLP|https://2026.emnlp.org/
+- Interspeech 2027|Sao Paulo, Brazil|2027-08-29|2027-02-09|Speech|https://interspeech2027.org/
+- ICASSP 2027|Toronto, Canada|2027-05-16|2026-09-16|Speech|https://2027.ieeeicassp.org/
+- ICLR 2027|TBA|2027-04-26|2026-09-25|ML|https://iclr.cc/
+- ICML 2027|TBA|TBA|TBA (was Jan 2026)|ML|https://icml.cc/
+- NeurIPS 2027|TBA|TBA|TBA|ML|https://neurips.cc/
+- CVPR 2027|TBA|TBA|TBA (autumn 2026 expected)|Vision|https://cvpr.thecvf.com/
+- ICCV 2027|Hong Kong|2027-10-01|TBA (was Mar 2025)|Vision|https://iccv.thecvf.com/
+- KDD 2027|San Jose, USA|2027-08-01|2027-02-01 (cycle 2 est.)|Data Mining|https://kdd.org/
+- WWW 2027|Dublin, Ireland|2027-05-10|2026-10-18|Web|https://www2027.thewebconf.org/
+- AAAI 2028|TBA|TBA|TBA|AI|https://aaai.org/
+- IJCAI 2027|TBA|TBA|TBA|AI|https://www.ijcai.org/
+- AISTATS 2027|TBA|TBA|TBA (CFP ~Oct 2026)|ML/Stats|https://www.aistats.org/
+- UAI 2027|TBA|TBA|TBA (~Feb 2027)|ML|https://www.auai.org/
+- COLM 2027|TBA|TBA|TBA|LM|https://colmweb.org/
+- EACL-SRW 2027|Athens|2027-03-09|2026-12-15 (direct)|NLP student|https://2027.eacl.org/calls/srw
+- NAACL-SRW 2027|San Francisco|2027-06-01|2027-01-11|NLP student|https://2027.naacl.org/
+- Sanskrit Symposium|Pune, India|2027-01-20|2026-10-20|Indic NLP|https://aclweb.org/portal/events
+- WMT 2027|TBA|TBA|TBA (Indic MT track)|MT|http://www2.statmt.org/
+# Format: Name|Location|ConfStart|PaperDeadline|Area|URL
+# PaperDeadline TBD = check official CFP. All AoE unless noted.

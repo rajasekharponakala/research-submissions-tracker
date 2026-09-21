@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Research Deadlines Tracker</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:900px;margin:2em auto;padding:0 1em}
+#filters button{margin:.2em;padding:.3em .7em;cursor:pointer}
+#filters button.on{background:#0366d6;color:#fff;border-color:#0366d6}
+table{border-collapse:collapse;width:100%;margin-top:1em}
+th,td{border:1px solid #ccc;padding:.4em .6em;text-align:left;font-size:.92em}
+tr.past{opacity:.45}.urgent{color:#b00;font-weight:bold}
+footer{margin-top:2em;font-size:.85em;color:#555}
+</style>
+</head>
+<body>
+<h1>Research Deadlines Tracker</h1>
+<p>Community countdowns for AI/NLP/Speech/Vision venues. Sources: official CFPs + WikiCFP. PRs welcome.</p>
+<div id="filters"></div>
+<table><thead><tr><th>Venue</th><th>Area</th><th>Location</th><th>Conference</th><th>Deadline (AoE)</th><th>Countdown</th></tr></thead>
+<tbody id="rows"></tbody></table>
+<footer>Data: <a href="deadlines.txt">deadlines.txt</a> (pipe-separated, edit + PR). Add iCal via WikiCFP per venue. Nothing here is official — always verify the CFP link.</footer>
+<script>
+const AREAS=["All","NLP","Speech","ML","Vision","AI","Data Mining","Web","LM","Indic NLP","MT","NLP student"];
+let data=[], area="All";
+function daysLeft(d){return Math.ceil((new Date(d+"T23:59:59-12:00")-Date.now())/864e5);}
+fetch("deadlines.txt").then(r=>r.text()).then(t=>{
+  data=t.split("\n").filter(l=>l.trim()&&!l.startsWith("#")).map(l=>{const[n,loc,conf,dl,a,u]=l.split("|");return{name:n,loc,conf,dl,area:a,url:u};});
+  const f=document.getElementById("filters");
+  AREAS.forEach(a=>{const b=document.createElement("button");b.textContent=a;if(a==="All")b.className="on";
+    b.onclick=()=>{area=a;document.querySelectorAll("#filters button").forEach(x=>x.className="");b.className="on";render();};f.appendChild(b);});
+  render();
+});
+function render(){
+  const tb=document.getElementById("rows");tb.innerHTML="";
+  data.filter(d=>area==="All"||d.area===area).sort((a,b)=>(a.dl.startsWith("TBD")? "9999":a.dl).localeCompare(b.dl.startsWith("TBD")?"9999":b.dl))
+  .forEach(d=>{const tr=document.createElement("tr");let cd=d.dl,cls="";
+    if(!d.dl.startsWith("TBD")){const n=daysLeft(d.dl);cd=n<0?`passed ${-n}d ago`:`${n} days`;cls=n<0?"past":n<=21?"urgent":"";tr.className=n<0?"past":"";}
+    tr.innerHTML=`<td><a href="${d.url}">${d.name}</a></td><td>${d.area}</td><td>${d.loc}</td><td>${d.conf}</td><td>${d.dl}</td><td class="${cls}">${cd}</td>`;
+    tb.appendChild(tr);});
+}
+</script>
+</body>
+</html>
