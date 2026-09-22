@@ -2,7 +2,7 @@ name: pages
 on:
   push:
     branches: [main]
-    paths: [index.html, deadlines.txt]
+    paths: [index.html, data/phones.json]
   workflow_dispatch:
 permissions:
   contents: read
