@@ -3,43 +3,283 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Research Deadlines Tracker</title>
+<title>GSMArena Phone Finder</title>
 <style>
-body{font-family:system-ui,sans-serif;max-width:900px;margin:2em auto;padding:0 1em}
-#filters button{margin:.2em;padding:.3em .7em;cursor:pointer}
-#filters button.on{background:#0366d6;color:#fff;border-color:#0366d6}
-table{border-collapse:collapse;width:100%;margin-top:1em}
-th,td{border:1px solid #ccc;padding:.4em .6em;text-align:left;font-size:.92em}
-tr.past{opacity:.45}.urgent{color:#b00;font-weight:bold}
-footer{margin-top:2em;font-size:.85em;color:#555}
+:root{
+  --bg:#f6f7f9; --card:#fff; --border:#e2e5ea; --text:#1a1d23; --muted:#666e7d;
+  --accent:#0366d6; --accent-bg:#eaf2fe; --urgent:#b00020;
+}
+*{box-sizing:border-box}
+body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:1200px;margin:0 auto;padding:1.5em 1em 3em;background:var(--bg);color:var(--text)}
+h1{margin:.2em 0 0;font-size:1.6em}
+.tagline{color:var(--muted);margin:.2em 0 1.2em;font-size:.95em}
+.toolbar{display:flex;flex-wrap:wrap;gap:.6em;align-items:center;margin-bottom:1em}
+#search{flex:1 1 240px;padding:.6em .8em;border:1px solid var(--border);border-radius:8px;font-size:1em}
+select,button{padding:.5em .7em;border:1px solid var(--border);border-radius:8px;background:var(--card);font-size:.9em;cursor:pointer}
+.filters{display:flex;flex-wrap:wrap;gap:.6em;margin-bottom:1em;padding:.9em;background:var(--card);border:1px solid var(--border);border-radius:10px}
+.filters label{display:flex;flex-direction:column;gap:.25em;font-size:.78em;color:var(--muted);font-weight:600}
+.filters select,.filters input{font-size:.9em}
+#clearFilters{margin-left:auto;align-self:flex-end;color:var(--accent);border-color:var(--accent)}
+.status{display:flex;justify-content:space-between;align-items:center;font-size:.85em;color:var(--muted);margin-bottom:.8em}
+.viewToggle button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.9em}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1em;display:flex;flex-direction:column;gap:.5em;position:relative}
+.avatar{width:44px;height:44px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1em}
+.card h3{margin:0;font-size:1.02em}
+.card .brand{color:var(--muted);font-size:.82em}
+.specs{list-style:none;margin:.3em 0 0;padding:0;font-size:.82em;color:var(--text);display:grid;gap:.25em}
+.specs li{display:flex;justify-content:space-between;gap:.5em}
+.specs li span:first-child{color:var(--muted)}
+.card a.src{font-size:.78em;color:var(--accent);text-decoration:none;margin-top:.3em}
+.compareBtn{position:absolute;top:.9em;right:.9em}
+.compareBtn input{cursor:pointer}
+table{border-collapse:collapse;width:100%;background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+th,td{border-bottom:1px solid var(--border);padding:.5em .6em;text-align:left;font-size:.85em}
+th{cursor:pointer;user-select:none;background:#fafbfc;white-space:nowrap}
+th.sorted{color:var(--accent)}
+tbody tr:hover{background:var(--accent-bg)}
+#empty{display:none;text-align:center;padding:3em 1em;color:var(--muted)}
+#compareBar{position:sticky;bottom:0;margin-top:1em;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:.8em 1em;display:none;align-items:center;gap:.8em;flex-wrap:wrap}
+#compareBar.show{display:flex}
+#compareBar strong{font-size:.85em}
+.chip{background:var(--accent-bg);color:var(--accent);border-radius:999px;padding:.2em .7em;font-size:.8em;display:flex;align-items:center;gap:.4em}
+.chip button{border:none;background:none;color:var(--accent);cursor:pointer;font-weight:700;padding:0}
+dialog{border:none;border-radius:12px;padding:0;max-width:900px;width:92vw}
+dialog::backdrop{background:rgba(0,0,0,.4)}
+#compareTable{margin:1.2em}
+#compareTable table{font-size:.85em}
+.dialogHead{display:flex;justify-content:space-between;align-items:center;padding:1em 1.2em;border-bottom:1px solid var(--border)}
+.dialogHead button{border:none;background:none;font-size:1.3em;cursor:pointer;color:var(--muted)}
+footer{margin-top:2.5em;font-size:.85em;color:var(--muted)}
+@media(max-width:600px){.filters{flex-direction:column}#clearFilters{margin-left:0;align-self:flex-start}}
 </style>
 </head>
 <body>
-<h1>Research Deadlines Tracker</h1>
-<p>Community countdowns for AI/NLP/Speech/Vision venues. Sources: official CFPs + WikiCFP. PRs welcome.</p>
-<div id="filters"></div>
-<table><thead><tr><th>Venue</th><th>Area</th><th>Location</th><th>Conference</th><th>Deadline (AoE)</th><th>Countdown</th></tr></thead>
-<tbody id="rows"></tbody></table>
-<footer>Data: <a href="deadlines.txt">deadlines.txt</a> (pipe-separated, edit + PR). Add iCal via WikiCFP per venue. Nothing here is official — always verify the CFP link.</footer>
+<h1>GSMArena Phone Finder</h1>
+<p class="tagline">Search, filter, sort and compare phones. Data scraped from GSMArena — not affiliated with or endorsed by GSMArena.</p>
+
+<div class="toolbar">
+  <input id="search" type="search" placeholder="Search brand or model…" autocomplete="off">
+  <select id="sort">
+    <option value="newest">Sort: Newest first</option>
+    <option value="priceAsc">Sort: Price low → high</option>
+    <option value="priceDesc">Sort: Price high → low</option>
+    <option value="battery">Sort: Battery</option>
+    <option value="ram">Sort: RAM</option>
+    <option value="name">Sort: Name (A–Z)</option>
+  </select>
+  <div class="viewToggle">
+    <button id="gridBtn" class="on">Grid</button>
+    <button id="tableBtn">Table</button>
+  </div>
+</div>
+
+<div class="filters">
+  <label>Brand
+    <select id="fBrand"><option value="">All</option></select>
+  </label>
+  <label>Min RAM
+    <select id="fRam"><option value="0">Any</option><option value="4">4 GB+</option><option value="8">8 GB+</option><option value="12">12 GB+</option><option value="16">16 GB+</option></select>
+  </label>
+  <label>Min storage
+    <select id="fStorage"><option value="0">Any</option><option value="128">128 GB+</option><option value="256">256 GB+</option><option value="512">512 GB+</option></select>
+  </label>
+  <label>Min battery
+    <select id="fBattery"><option value="0">Any</option><option value="4000">4000 mAh+</option><option value="4500">4500 mAh+</option><option value="5000">5000 mAh+</option></select>
+  </label>
+  <label>Max price
+    <select id="fPrice"><option value="99999">Any</option><option value="400">$400</option><option value="600">$600</option><option value="900">$900</option><option value="1200">$1200</option></select>
+  </label>
+  <label>Year
+    <select id="fYear"><option value="0">Any</option></select>
+  </label>
+  <button id="clearFilters">Clear filters</button>
+</div>
+
+<div class="status">
+  <span id="count"></span>
+  <span id="updated"></span>
+</div>
+
+<div id="grid"></div>
+<table id="table" style="display:none">
+  <thead><tr>
+    <th data-k="brand">Brand</th><th data-k="model">Model</th><th data-k="releaseYear">Year</th>
+    <th data-k="ramGB">RAM</th><th data-k="storageGB">Storage</th><th data-k="batteryMah">Battery</th>
+    <th data-k="priceUSD">Price</th><th></th>
+  </tr></thead>
+  <tbody id="tbody"></tbody>
+</table>
+<div id="empty">No phones match these filters. <button id="emptyClear">Clear filters</button></div>
+
+<div id="compareBar">
+  <strong>Compare:</strong>
+  <div id="compareChips" style="display:flex;gap:.4em;flex-wrap:wrap"></div>
+  <button id="compareGo" style="margin-left:auto">Compare selected</button>
+  <button id="compareReset">Clear</button>
+</div>
+
+<dialog id="compareDialog">
+  <div class="dialogHead"><strong>Compare phones</strong><button id="closeDialog" aria-label="Close">×</button></div>
+  <div id="compareTable"></div>
+</dialog>
+
+<footer>
+  Data: <a href="data/phones.json">data/phones.json</a>, scraped from
+  <a href="https://www.gsmarena.com/" target="_blank" rel="noopener">GSMArena</a>
+  via <a href="scraper/scrape_gsmarena.py">scraper/scrape_gsmarena.py</a>.
+  Not affiliated with GSMArena — always check the linked page for current details.
+</footer>
+
 <script>
-const AREAS=["All","NLP","Speech","ML","Vision","AI","Data Mining","Web","LM","Indic NLP","MT","NLP student"];
-let data=[], area="All";
-function daysLeft(d){return Math.ceil((new Date(d+"T23:59:59-12:00")-Date.now())/864e5);}
-fetch("deadlines.txt").then(r=>r.text()).then(t=>{
-  data=t.split("\n").filter(l=>l.trim()&&!l.startsWith("#")).map(l=>{const[n,loc,conf,dl,a,u]=l.split("|");return{name:n,loc,conf,dl,area:a,url:u};});
-  const f=document.getElementById("filters");
-  AREAS.forEach(a=>{const b=document.createElement("button");b.textContent=a;if(a==="All")b.className="on";
-    b.onclick=()=>{area=a;document.querySelectorAll("#filters button").forEach(x=>x.className="");b.className="on";render();};f.appendChild(b);});
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+let ALL=[], compareSet=new Set(), sortKey="newest", tableSort={key:null,dir:1};
+
+fetch("data/phones.json").then(r=>r.json()).then(d=>{
+  ALL=d.phones||[];
+  $("#updated").textContent=d.scrapedAt?`Updated ${new Date(d.scrapedAt).toLocaleDateString()}`:"Seed data (run the scraper for live data)";
+  const brands=[...new Set(ALL.map(p=>p.brand))].sort();
+  brands.forEach(b=>$("#fBrand").insertAdjacentHTML("beforeend",`<option value="${b}">${b}</option>`));
+  const years=[...new Set(ALL.map(p=>p.releaseYear))].sort((a,b)=>b-a);
+  years.forEach(y=>$("#fYear").insertAdjacentHTML("beforeend",`<option value="${y}">${y}</option>`));
   render();
 });
-function render(){
-  const tb=document.getElementById("rows");tb.innerHTML="";
-  data.filter(d=>area==="All"||d.area===area).sort((a,b)=>(a.dl.startsWith("TBD")? "9999":a.dl).localeCompare(b.dl.startsWith("TBD")?"9999":b.dl))
-  .forEach(d=>{const tr=document.createElement("tr");let cd=d.dl,cls="";
-    if(!d.dl.startsWith("TBD")){const n=daysLeft(d.dl);cd=n<0?`passed ${-n}d ago`:`${n} days`;cls=n<0?"past":n<=21?"urgent":"";tr.className=n<0?"past":"";}
-    tr.innerHTML=`<td><a href="${d.url}">${d.name}</a></td><td>${d.area}</td><td>${d.loc}</td><td>${d.conf}</td><td>${d.dl}</td><td class="${cls}">${cd}</td>`;
-    tb.appendChild(tr);});
+
+function maxNum(v){return Array.isArray(v)?Math.max(...v):v;}
+
+function filtered(){
+  const q=$("#search").value.trim().toLowerCase();
+  const brand=$("#fBrand").value, minRam=+$("#fRam").value, minStorage=+$("#fStorage").value,
+        minBattery=+$("#fBattery").value, maxPrice=+$("#fPrice").value, year=+$("#fYear").value;
+  return ALL.filter(p=>{
+    if(q && !(`${p.brand} ${p.model}`.toLowerCase().includes(q))) return false;
+    if(brand && p.brand!==brand) return false;
+    if(minRam && maxNum(p.ramGB)<minRam) return false;
+    if(minStorage && maxNum(p.storageGB)<minStorage) return false;
+    if(minBattery && (p.batteryMah||0)<minBattery) return false;
+    if(maxPrice<99999 && (p.priceUSD||0)>maxPrice) return false;
+    if(year && p.releaseYear!==year) return false;
+    return true;
+  });
 }
+
+function sorted(list){
+  const by={
+    newest:(a,b)=>b.releaseYear-a.releaseYear,
+    priceAsc:(a,b)=>(a.priceUSD||0)-(b.priceUSD||0),
+    priceDesc:(a,b)=>(b.priceUSD||0)-(a.priceUSD||0),
+    battery:(a,b)=>(b.batteryMah||0)-(a.batteryMah||0),
+    ram:(a,b)=>maxNum(b.ramGB||[0])-maxNum(a.ramGB||[0]),
+    name:(a,b)=>`${a.brand} ${a.model}`.localeCompare(`${b.brand} ${b.model}`),
+  };
+  return [...list].sort(by[sortKey]||by.newest);
+}
+
+function initials(brand){return brand.slice(0,2).toUpperCase();}
+
+function cardHtml(p){
+  return `<div class="card">
+    <label class="compareBtn"><input type="checkbox" data-id="${p.id}" ${compareSet.has(p.id)?"checked":""}></label>
+    <div class="avatar">${initials(p.brand)}</div>
+    <h3>${p.brand} ${p.model}</h3>
+    <span class="brand">${p.releaseYear} · ${p.chipset||"—"}</span>
+    <ul class="specs">
+      <li><span>Display</span><span>${p.displayInches?p.displayInches+'"':"—"} ${p.displayType?"("+p.displayType+")":""}</span></li>
+      <li><span>RAM / Storage</span><span>${(p.ramGB||[]).join("/")||"—"} GB / ${(p.storageGB||[]).join("/")||"—"} GB</span></li>
+      <li><span>Battery</span><span>${p.batteryMah?p.batteryMah+" mAh":"—"} ${p.chargingW?"("+p.chargingW+"W)":""}</span></li>
+      <li><span>Camera</span><span>${p.mainCameraMP?p.mainCameraMP+" MP":"—"}</span></li>
+      <li><span>Price</span><span>${p.priceUSD?"$"+p.priceUSD:"—"}</span></li>
+    </ul>
+    <a class="src" href="${p.url}" target="_blank" rel="noopener">View on GSMArena →</a>
+  </div>`;
+}
+
+function rowHtml(p){
+  return `<tr>
+    <td>${p.brand}</td><td>${p.model}</td><td>${p.releaseYear}</td>
+    <td>${(p.ramGB||[]).join("/")||"—"}</td><td>${(p.storageGB||[]).join("/")||"—"}</td>
+    <td>${p.batteryMah||"—"}</td><td>${p.priceUSD?"$"+p.priceUSD:"—"}</td>
+    <td><label><input type="checkbox" data-id="${p.id}" ${compareSet.has(p.id)?"checked":""}> compare</label></td>
+  </tr>`;
+}
+
+function render(){
+  let list=sorted(filtered());
+  if(tableSort.key){
+    list=[...list].sort((a,b)=>{
+      let av=maxNum(a[tableSort.key]??0), bv=maxNum(b[tableSort.key]??0);
+      if(typeof av==="string") return av.localeCompare(bv)*tableSort.dir;
+      return (av-bv)*tableSort.dir;
+    });
+  }
+  $("#count").textContent=`Showing ${list.length} of ${ALL.length} phones`;
+  $("#empty").style.display=list.length?"none":"block";
+  $("#grid").innerHTML=list.map(cardHtml).join("");
+  $("#tbody").innerHTML=list.map(rowHtml).join("");
+  $$('#grid input[type=checkbox], #tbody input[type=checkbox]').forEach(cb=>{
+    cb.onchange=()=>{
+      if(cb.checked){
+        if(compareSet.size>=3){cb.checked=false;alert("Compare up to 3 phones at a time.");return;}
+        compareSet.add(cb.dataset.id);
+      } else compareSet.delete(cb.dataset.id);
+      renderCompareBar();
+    };
+  });
+}
+
+function renderCompareBar(){
+  const bar=$("#compareBar");
+  bar.classList.toggle("show",compareSet.size>0);
+  $("#compareChips").innerHTML=[...compareSet].map(id=>{
+    const p=ALL.find(x=>x.id===id);
+    return `<span class="chip">${p.brand} ${p.model}<button data-id="${id}">×</button></span>`;
+  }).join("");
+  $$("#compareChips button").forEach(b=>b.onclick=()=>{compareSet.delete(b.dataset.id);renderCompareBar();render();});
+}
+
+function openCompare(){
+  const rows=[["Brand","brand"],["Model","model"],["Year","releaseYear"],["Display","displayInches"],
+    ["Chipset","chipset"],["RAM (GB)","ramGB"],["Storage (GB)","storageGB"],["Battery (mAh)","batteryMah"],
+    ["Charging (W)","chargingW"],["Main camera (MP)","mainCameraMP"],["Selfie camera (MP)","selfieCameraMP"],
+    ["Weight (g)","weightG"],["Price (USD)","priceUSD"],["OS","os"]];
+  const items=[...compareSet].map(id=>ALL.find(p=>p.id===id));
+  let html='<table><thead><tr><th></th>'+items.map(p=>`<th>${p.brand} ${p.model}</th>`).join("")+"</tr></thead><tbody>";
+  rows.forEach(([label,key])=>{
+    html+=`<tr><td><strong>${label}</strong></td>`+items.map(p=>{
+      let v=p[key]; if(Array.isArray(v)) v=v.join(" / ");
+      return `<td>${v??"—"}</td>`;
+    }).join("")+"</tr>";
+  });
+  html+="</tbody></table>";
+  $("#compareTable").innerHTML=html;
+  $("#compareDialog").showModal();
+}
+
+$("#search").addEventListener("input",render);
+$("#sort").addEventListener("change",e=>{sortKey=e.target.value;render();});
+["fBrand","fRam","fStorage","fBattery","fPrice","fYear"].forEach(id=>$("#"+id).addEventListener("change",render));
+$("#clearFilters").onclick=$("#emptyClear").onclick=()=>{
+  $("#search").value="";
+  ["fBrand","fRam","fStorage","fBattery","fYear"].forEach(id=>$("#"+id).value="");
+  $("#fPrice").value="99999";
+  render();
+};
+$("#gridBtn").onclick=()=>{$("#gridBtn").classList.add("on");$("#tableBtn").classList.remove("on");$("#grid").style.display="grid";$("#table").style.display="none";};
+$("#tableBtn").onclick=()=>{$("#tableBtn").classList.add("on");$("#gridBtn").classList.remove("on");$("#grid").style.display="none";$("#table").style.display="table";};
+$$("th[data-k]").forEach(th=>th.addEventListener("click",()=>{
+  const k=th.dataset.k;
+  tableSort.dir = tableSort.key===k ? -tableSort.dir : 1;
+  tableSort.key=k;
+  $$("th[data-k]").forEach(x=>x.classList.remove("sorted"));
+  th.classList.add("sorted");
+  render();
+}));
+$("#compareGo").onclick=()=>{
+  if(compareSet.size<2){alert("Pick at least 2 phones to compare.");return;}
+  openCompare();
+};
+$("#compareReset").onclick=()=>{compareSet.clear();renderCompareBar();render();};
+$("#closeDialog").onclick=()=>$("#compareDialog").close();
 </script>
 </body>
 </html>
